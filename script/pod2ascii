@@ -1,0 +1,76 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use File::Basename;
+use Getopt::Long;
+use Pod::Ascii 'pod2ascii';
+
+my $IN_PLACE;
+
+GetOptions(
+    'i' => \$IN_PLACE,
+) && @ARGV or do {
+    require Pod::Usage;
+    Pod::Usage::pod2usage();
+};
+
+if (@ARGV == 2 && !$IN_PLACE) {
+    pod2ascii($ARGV[0], $ARGV[1]);
+} elsif (@ARGV > 1) {
+    unless ($IN_PLACE) {
+        die "too many files for STDOUT output\n"
+    }
+    foreach my $file (@ARGV) {
+        eval {
+            # We do in multiple steps to avoid overwriting the input file
+            # before read completed (pod2ascii reads line by line)
+            #my $in = Pod::Ascii::input($file);
+            #my $out_bytes = Pod::Ascii::pod2ascii($in);
+            #print { Pod::Ascii::output($file) } $out_bytes;
+        };
+        warn "$file: $@" if $@;
+    }
+} else {
+    pod2ascii($ARGV[0], \*STDOUT);
+}
+
+__END__
+
+=head1 NAME
+
+pod2ascii - Escape non-ascii characters in POD
+
+=head1 SYNOPSIS
+
+pod2ascii I<input> > I<output>
+
+pod2ascii I<input> I<output>
+
+pod2ascii -i I<file1> [I<file2> ...]
+
+=head1 OPTIONS
+
+=head2 C<-i>
+
+Convert the files in-place.
+
+=head1 SEE ALSO
+
+L<Pod::Ascii>
+
+=head1 AUTHOR
+
+Olivier MenguE<eacute>, L<mailto:dolmen@cpan.org>.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright E<copy> 2011 Olivier MenguE<eacute>.
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl 5 itself.
+
+=cut
+
+# vim: set et sw=4 sts=4 :
